@@ -861,7 +861,14 @@ function makeNote(n) {
   const p = document.createElement("p"); p.textContent = n.text;                 // always text, never HTML
   const from = document.createElement("span"); from.className = "note-from"; from.textContent = "— " + n.name;
   const time = document.createElement("time"); time.dataset.at = n.at; time.textContent = agoText(n.at);
-  el.append(p, from, time); return el;
+  el.append(p, from, time);
+  if (n.text.length > 320 || (n.text.match(/\n/g) || []).length > 6) {
+    el.classList.add("long");
+    const more = document.createElement("button"); more.type = "button"; more.className = "note-more"; more.textContent = "read more";
+    more.addEventListener("click", () => { const open = el.classList.toggle("open"); more.textContent = open ? "show less" : "read more"; ScrollTrigger.refresh(); });
+    p.after(more);
+  }
+  return el;
 }
 function renderNotes(list, animate = true) {
   wallReady = true; const fresh = [];
@@ -900,7 +907,8 @@ ScrollTrigger.create({                                 // refresh every 15s whil
 gsap.from(".wall .eyebrow, .wall-title, .wall-sub", { autoAlpha: 0, y: 40, stagger: .12, duration: 1.2, ease: "expo.out", scrollTrigger: { trigger: "#wall", start: "top 70%" } });
 
 const noteText = $("#noteText"), noteBtn = $("#noteBtn"), noteStatus = $("#noteStatus");
-noteText.addEventListener("input", () => ($("#noteCount").textContent = `${noteText.value.length} / 280`));
+const showCount = (el, out) => { const n = el.value.length; out.textContent = n > 1700 ? `${n} / 2000` : ""; };
+noteText.addEventListener("input", () => showCount(noteText, $("#noteCount")));
 $("#noteForm").addEventListener("submit", async e => {
   e.preventDefault();
   const text = noteText.value.trim();
@@ -913,7 +921,7 @@ $("#noteForm").addEventListener("submit", async e => {
     if (!r.ok) throw new Error(r.status);
     const data = await r.json();
     if (data.note) renderNotes([data.note]);
-    noteText.value = ""; $("#noteCount").textContent = "0 / 280";
+    noteText.value = ""; $("#noteCount").textContent = "";
     noteStatus.textContent = "it's on the wall ✦";
     const b = noteBtn.getBoundingClientRect(); burst(b.left + b.width / 2, b.top, small ? 70 : 110, .7); chime(); buzz(20);
   } catch (err) {

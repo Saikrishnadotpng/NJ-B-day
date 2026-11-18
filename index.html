@@ -204,9 +204,9 @@
       <form class="note-form" id="noteForm" autocomplete="off">
         <p class="nf-title">Add a note to the wall</p>
         <input id="noteName" maxlength="40" placeholder="your name" aria-label="Your name" />
-        <textarea id="noteText" maxlength="280" rows="3" placeholder="write something…" aria-label="Your note"></textarea>
+        <textarea id="noteText" maxlength="2000" rows="3" placeholder="write something…" aria-label="Your note"></textarea>
         <input class="hp" id="noteHp" tabindex="-1" autocomplete="off" aria-hidden="true" />
-        <div class="nf-row"><span class="nf-count" id="noteCount">0 / 280</span><button type="submit" id="noteBtn" data-cursor="✦">pin it ✦</button></div>
+        <div class="nf-row"><span class="nf-count" id="noteCount"></span><button type="submit" id="noteBtn" data-cursor="✦">pin it ✦</button></div>
         <p class="nf-status" id="noteStatus" role="status"></p>
       </form>
     </section>

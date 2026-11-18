@@ -49,7 +49,7 @@ module.exports = async function handler(req, res) {
       body = body || {};
       if (body.website) return res.status(200).json({ ok: true });            // bot trap field
       const name = clean(body.name, 40) || "someone who loves you";
-      const text = clean(body.text, 280);
+      const text = clean(body.text, 2000);
       if (text.length < 2) return res.status(400).json({ error: "empty" });
 
       const ip = String(req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "x").split(",")[0].trim();

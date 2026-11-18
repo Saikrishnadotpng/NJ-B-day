@@ -435,3 +435,8 @@ body.particles-on .ft-name { position: absolute; width: 1px; height: 1px; overfl
 .nf-row button:disabled { opacity: .5; }
 .nf-status { min-height: 1.4em; text-align: center; color: rgba(252, 248, 242, .75); font-size: .92rem; }
 @media (max-width: 560px) { .notes { columns: 1; } .note p { font-size: 1.15rem; } }
+
+/* v9 · long notes fold with "read more" */
+.note.long p { max-height: 10.2em; overflow: hidden; -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); }
+.note.long.open p { max-height: none; -webkit-mask-image: none; mask-image: none; }
+.note-more { display: inline-block; margin-top: .4rem; padding: .35rem 0; background: none; border: 0; cursor: pointer; font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; font-weight: 600; color: var(--red); }

@@ -292,10 +292,10 @@
 
     <form id="f" autocomplete="off">
       <input id="name" maxlength="40" placeholder="your name" aria-label="Your name" />
-      <textarea id="text" maxlength="280" rows="4" placeholder="happy birthday! …"
+      <textarea id="text" maxlength="2000" rows="4" placeholder="happy birthday! …"
         aria-label="Your birthday note"></textarea>
       <input class="hp" id="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
-      <div class="row"><span class="count" id="count">0 / 280</span><button type="submit" id="btn">pin it ✦</button>
+      <div class="row"><span class="count" id="count"></span><button type="submit" id="btn">pin it ✦</button>
       </div>
       <p class="status" id="status" role="status"></p>
     </form>
@@ -326,7 +326,8 @@
       } catch (e) { }
     }
     tally();
-    $("#text").addEventListener("input", e => ($("#count").textContent = `${e.target.value.length} / 280`));
+    const showCount = (el, out) => { const n = el.value.length; out.textContent = n > 1700 ? `${n} / 2000` : ""; };
+    $("#text").addEventListener("input", () => showCount($("#text"), $("#count")));
     $("#f").addEventListener("submit", async e => {
       e.preventDefault();
       const text = $("#text").value.trim();
@@ -341,7 +342,7 @@
       } catch (err) { $("#status").textContent = local ? "notes only work on the live site" : "couldn't send — check your connection and try again"; }
       finally { $("#btn").disabled = false; }
     });
-    $("#again").addEventListener("click", () => { $("#text").value = ""; $("#count").textContent = "0 / 280"; $("#done").classList.remove("show"); $("#f").style.display = ""; $("#text").focus(); });
+    $("#again").addEventListener("click", () => { $("#text").value = ""; $("#count").textContent = ""; $("#done").classList.remove("show"); $("#f").style.display = ""; $("#text").focus(); });
   </script>
 </body>
 
