@@ -444,17 +444,24 @@ gsap.to(".quote-text .w", {
 gsap.from(".quote .eyebrow", { autoAlpha: 0, y: 20, duration: 1, scrollTrigger: { trigger: ".quote", start: "top 80%" } });
 
 // sea: small arch → full screen (her face stays centred in the arch, then the shot opens up)
-const SEA_ZOOM = 1.3, SEA_FACE = { x: .80, y: .27 }, SEA_POS = { x: .80, y: .25 };
+// small zoom only (the photo is low-res), face centred by sliding, never leaving gaps in the arch
+const SEA_ZOOM = 1.08, SEA_FACE = { x: .80, y: .27 }, SEA_POS = { x: .80, y: .25 };
 function seaFace() {
   const img = $(".sea-frame img"), Wb = innerWidth, Hb = innerHeight;
   const iw = img.naturalWidth || 960, ih = img.naturalHeight || 1074, k = Math.max(Wb / iw, Hb / ih);
   const dw = iw * k, dh = ih * k, fx = (Wb - dw) * SEA_POS.x + SEA_FACE.x * dw, fy = (Hb - dh) * SEA_POS.y + SEA_FACE.y * dh;
-  return { x: -(fx - Wb / 2) * SEA_ZOOM, y: -(fy - Hb / 2) * SEA_ZOOM };
+  // the arch window at the start (matches the CSS clip-path insets)
+  const insX = (small ? .14 : .32) * Wb, insY = (small ? .21 : .18) * Hb;
+  const maxX = Math.max(0, SEA_ZOOM * Wb / 2 - (Wb / 2 - insX)), maxY = Math.max(0, SEA_ZOOM * Hb / 2 - (Hb / 2 - insY));
+  const c = gsap.utils.clamp;
+  return { x: c(-maxX, maxX, -(fx - Wb / 2) * SEA_ZOOM), y: c(-maxY, maxY, -(fy - Hb / 2) * SEA_ZOOM) };
 }
 gsap.timeline({
   scrollTrigger: { trigger: ".sea", start: "top top", end: () => "+=" + innerHeight * 1.6, pin: true, anticipatePin: 1, scrub: 1, invalidateOnRefresh: true }
 })
-  .to(".sea-frame", { clipPath: "inset(0vh 0vw 0vh 0vw round 0px 0px 0px 0px)", ease: "power2.inOut", duration: 1 })
+  .fromTo(".sea-frame",
+    { clipPath: () => small ? "inset(21vh 14vw 21vh 14vw round 300px 300px 14px 14px)" : "inset(18vh 32vw 18vh 32vw round 300px 300px 14px 14px)" },
+    { clipPath: "inset(0vh 0vw 0vh 0vw round 0px 0px 0px 0px)", ease: "power2.inOut", duration: 1 })
   .fromTo(".sea-frame img", { x: () => seaFace().x, y: () => seaFace().y, scale: SEA_ZOOM }, { x: 0, y: 0, scale: 1, ease: "power2.inOut", duration: 1 }, 0)
   .to(".sea-shade", { opacity: 1, duration: .5 }, .55)
   .from(".sea-caption .eyebrow", { autoAlpha: 0, y: 30, duration: .3 }, .7)
