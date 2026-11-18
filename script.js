@@ -20,9 +20,15 @@ const CONFIG = {
   voiceNote: "assets/voice-note.mp3",
   voiceLabel: "read it to me",   // use "hear it from me" only if it's your real voice
   // second each part starts in the audio: Dear…, paragraph 1–4, signature
-  voiceCues: [0, 1.35, 7.4, 17.05, 26.95, 28.45],
+  voiceCues: [0, 1.35, 7.4, 17.48, 27.38, 28.9],
   birthday: { year: 2026, month: 11, day: 19 }
 };
+
+/* ───────── always start at the top (browsers otherwise restore the old scroll spot) ───────── */
+if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+window.scrollTo(0, 0);
+addEventListener("pageshow", e => { if (e.persisted) location.reload(); });   // coming back via the Back button → fresh start
 
 /* ───────── apply config ───────── */
 const $ = (s, r = document) => r.querySelector(s);
@@ -404,7 +410,8 @@ $("#seal").addEventListener("click", () => {
 
 function heroIn() {
   document.body.classList.remove("is-locked");
-  if (lenis) lenis.start();
+  window.scrollTo(0, 0);
+  if (lenis) { lenis.scrollTo(0, { immediate: true, force: true }); lenis.start(); }
   ScrollTrigger.refresh();
   gsap.timeline({ defaults: { ease: "expo.out" } })
     .to(".hero-eyebrow .line-mask > span", { yPercent: 0, duration: 1.2 })
