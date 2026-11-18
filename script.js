@@ -15,7 +15,10 @@ const CONFIG = {
   // the dark opening lines, one at a time ({name} becomes her name)
   intro: ["Hey, {name}.", "I know it looks like just a link.", "It isn't.", "Ready?"],
   // hidden under the gold scratch card
-  secret: "I'm really, really glad I know you. That's the secret. Happy birthday ✦",
+  // hidden under the gold scratch card — written like a page from a novel
+  secretChapter: "Chapter Nineteen",
+  secret: "He had been standing at the edge of too many questions for too long, waiting for one of them to answer back. Then she walked in — laughing at something he couldn't hear — and for the first time in months, the noise in his head went quiet.",
+  secretSource: "— from a story I'm still writing",
   // record a voice message, save it as assets/voice-note.mp3 — the button appears automatically
   voiceNote: "assets/voice-note.mp3",
   voiceLabel: "read it to me",   // use "hear it from me" only if it's your real voice
@@ -632,6 +635,17 @@ let nResize; addEventListener("resize", () => { clearTimeout(nResize); nResize =
 
 /* ═══════════════ v3 · SCRATCH CARD ═══════════════ */
 $("#secretText").textContent = CONFIG.secret;
+$("#secretChapter").textContent = CONFIG.secretChapter || "";
+$("#secretSource").textContent = CONFIG.secretSource || "";
+// shrink the passage until it fits the card on any screen
+function fitSecret() {
+  const box = $(".scratch-msg"), p = $("#secretText");
+  let size = Math.min(26, Math.max(15, box.clientWidth / 17));
+  p.style.fontSize = size + "px";
+  while (box.scrollHeight > box.clientHeight + 1 && size > 12) { size -= .5; p.style.fontSize = size + "px"; }
+}
+(document.fonts ? document.fonts.ready : Promise.resolve()).then(fitSecret);
+addEventListener("resize", () => { clearTimeout(fitSecret.t); fitSecret.t = setTimeout(fitSecret, 150); });
 const sc = $("#scratchCanvas"), sctx = sc.getContext("2d", { willReadFrequently: true });
 let scW = 0, scH = 0, scDone = false, scMoves = 0, scLast = null;
 function paintFoil() {
@@ -668,7 +682,7 @@ function checkScratch() {
 function revealSecret() {
   if (scDone) return; scDone = true; buzz(30);
   gsap.to(sc, { autoAlpha: 0, duration: .9, ease: "power2.out" });
-  gsap.from(".scratch-msg p, .scratch-sign", { scale: .92, duration: 1.2, ease: "back.out(2)", stagger: .1 });
+  gsap.from(".scratch-msg > *", { autoAlpha: 0, y: 14, duration: 1.1, ease: "power3.out", stagger: .12 });
   $("#scratchHint").textContent = "there it is ✦";
   const r = sc.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height / 2, small ? 90 : 140, .8);
   chime();
