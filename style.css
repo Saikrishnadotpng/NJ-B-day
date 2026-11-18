@@ -453,3 +453,9 @@ body.particles-on .ft-name { position: absolute; width: 1px; height: 1px; overfl
 .scratch-source { display: block; margin-top: .9rem; text-align: right; font-family: var(--serif); font-style: italic; font-size: .95rem; color: var(--ink-soft); }
 .scratch-msg .scratch-sign { display: block; margin-top: .1rem; text-align: right; font-size: 1.6rem; line-height: 1; }
 @media (max-width: 560px) { .scratch { aspect-ratio: 1.02; } .scratch-msg { padding: 9% 8% 7%; } }
+
+/* v10b · keep everything inside the gold inner border */
+.scratch-msg { padding: clamp(30px, 7.5%, 46px) clamp(28px, 9%, 58px) clamp(30px, 7%, 44px); }
+.scratch-msg .scratch-sign { padding-bottom: .12em; }
+@media (max-width: 560px) { .scratch-msg { padding: clamp(28px, 9%, 40px) clamp(24px, 8%, 34px) clamp(26px, 8%, 36px); } }
+@media (max-width: 420px) { .scratch { aspect-ratio: .86; } }

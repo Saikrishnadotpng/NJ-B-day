@@ -639,10 +639,18 @@ $("#secretChapter").textContent = CONFIG.secretChapter || "";
 $("#secretSource").textContent = CONFIG.secretSource || "";
 // shrink the passage until it fits the card on any screen
 function fitSecret() {
-  const box = $(".scratch-msg"), p = $("#secretText");
-  let size = Math.min(26, Math.max(15, box.clientWidth / 17));
+  const box = $(".scratch-msg"), p = $("#secretText"), kids = [...box.children];
+  const cs = getComputedStyle(box);
+  // space inside the padding (the gold inner border sits in the padding), minus a little breathing room
+  const avail = box.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 6;
+  const used = () => {
+    const top = Math.min(...kids.map(k => k.getBoundingClientRect().top - parseFloat(getComputedStyle(k).marginTop)));
+    const bottom = Math.max(...kids.map(k => k.getBoundingClientRect().bottom + parseFloat(getComputedStyle(k).marginBottom)));
+    return bottom - top;
+  };
+  let size = Math.min(24, Math.max(15, box.clientWidth / 18));
   p.style.fontSize = size + "px";
-  while (box.scrollHeight > box.clientHeight + 1 && size > 12) { size -= .5; p.style.fontSize = size + "px"; }
+  while (used() > avail && size > 11) { size -= .5; p.style.fontSize = size + "px"; }
 }
 (document.fonts ? document.fonts.ready : Promise.resolve()).then(fitSecret);
 addEventListener("resize", () => { clearTimeout(fitSecret.t); fitSecret.t = setTimeout(fitSecret, 150); });
