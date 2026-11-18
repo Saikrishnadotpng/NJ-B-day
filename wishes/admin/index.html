@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Notes · manage</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#110607" />
+  <style>
+    @font-face { font-family: "Cormorant"; src: url(../../assets/fonts/cormorant-garamond-latin-500-italic.woff2) format("woff2"); font-weight: 500; font-style: italic; font-display: swap; }
+    @font-face { font-family: "Cormorant"; src: url(../../assets/fonts/cormorant-garamond-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+    @font-face { font-family: "Manrope"; src: url(../../assets/fonts/manrope-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+    @font-face { font-family: "Manrope"; src: url(../../assets/fonts/manrope-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+    @font-face { font-family: "Caveat"; src: url(../../assets/fonts/caveat-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+    :root { --night: #110607; --paper: #fcf8f2; --ink: #2a1916; --gold: #c29a5b; --gold-hi: #f0d9a6; --red: #a3202b; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { min-height: 100svh; font-family: Manrope, system-ui, sans-serif; color: var(--paper); background: var(--night); padding: 7vh 5vw 10vh; -webkit-font-smoothing: antialiased; }
+    main { width: min(100%, 720px); margin: 0 auto; }
+    .eyebrow { font-size: .72rem; letter-spacing: .3em; text-transform: uppercase; color: var(--gold); font-weight: 600; }
+    h1 { font-family: Cormorant, Georgia, serif; font-style: italic; font-weight: 500; font-size: clamp(2.2rem, 7vw, 3rem); margin: .5rem 0 .6rem; }
+    .sub { color: rgba(252,248,242,.6); line-height: 1.6; margin-bottom: 2rem; }
+    .lock { display: flex; gap: .6rem; flex-wrap: wrap; }
+    input { flex: 1; min-width: 200px; background: rgba(255,255,255,.06); border: 1px solid rgba(240,217,166,.3); border-radius: 12px; padding: .9rem 1rem; color: var(--paper); font-size: 1rem; outline: none; }
+    input:focus { border-color: var(--gold-hi); }
+    button { border: 0; border-radius: 999px; background: var(--gold); color: var(--night); font-size: .74rem; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; padding: .9rem 1.4rem; min-height: 44px; cursor: pointer; }
+    button.ghost { background: transparent; color: var(--gold-hi); border: 1px solid rgba(240,217,166,.4); }
+    .msg { min-height: 1.4em; margin: .9rem 0 0; color: rgba(252,248,242,.75); }
+    .bar { display: none; justify-content: space-between; align-items: center; gap: 1rem; margin: 2rem 0 1rem; color: rgba(227,207,166,.7); font-size: .8rem; letter-spacing: .12em; text-transform: uppercase; }
+    .unlocked .bar { display: flex; } .unlocked .lock { display: none; }
+    .list { display: flex; flex-direction: column; gap: .9rem; }
+    .note { display: flex; gap: 1rem; align-items: flex-start; background: var(--paper); color: var(--ink); border-radius: 10px; padding: 1.1rem 1.1rem 1rem 1.3rem; transition: opacity .3s, transform .3s; }
+    .note.gone { opacity: 0; transform: translateX(30px); }
+    .note .body { flex: 1; min-width: 0; }
+    .note p { font-family: Cormorant, Georgia, serif; font-size: 1.15rem; line-height: 1.4; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .note .from { font-family: Caveat, cursive; font-size: 1.35rem; color: var(--red); margin-top: .3rem; overflow-wrap: anywhere; }
+    .note time { display: block; font-size: .66rem; letter-spacing: .15em; text-transform: uppercase; color: var(--gold); margin-top: .15rem; }
+    .del { flex: none; background: #f2e6e4; color: var(--red); letter-spacing: .1em; padding: .7rem 1rem; min-height: 40px; }
+    .del.sure { background: var(--red); color: var(--paper); }
+    .empty { color: rgba(252,248,242,.55); font-family: Cormorant, Georgia, serif; font-style: italic; font-size: 1.3rem; padding: 1.5rem 0; }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">private · only for you</p>
+    <h1>Manage the notes wall</h1>
+    <p class="sub">Delete test notes or anything you don't want her to see. Tap delete twice to confirm. Deleted notes can't be brought back.</p>
+
+    <form class="lock" id="lock">
+      <input id="key" type="password" placeholder="admin password (ADMIN_KEY)" autocomplete="current-password" aria-label="Admin password" />
+      <button type="submit">unlock</button>
+    </form>
+    <p class="msg" id="msg" role="status"></p>
+
+    <div class="bar"><span id="count"></span><span><button class="ghost" id="refresh" type="button">refresh</button> <button class="ghost" id="logout" type="button">lock</button></span></div>
+    <div class="list" id="list"></div>
+  </main>
+  <script>
+    const API = "../../api/messages", $ = s => document.querySelector(s);
+    let KEY = "";
+    try { KEY = sessionStorage.getItem("bdayAdminKey") || ""; } catch (e) {}
+    const ago = t => { const m = Math.round((Date.now() - t) / 60000); if (m < 1) return "just now"; if (m < 60) return m + " min ago"; const h = Math.round(m / 60); return h < 24 ? h + " h ago" : new Date(t).toLocaleString(); };
+
+    async function check(key) {
+      const r = await fetch(API, { method: "DELETE", headers: { "x-admin-key": key } });
+      if (r.ok) return "ok";
+      const d = await r.json().catch(() => ({}));
+      return d.error || "error";
+    }
+    async function load() {
+      $("#list").innerHTML = "";
+      const r = await fetch(API, { cache: "no-store" });
+      if (!r.ok) { $("#msg").textContent = "couldn't load notes (is the storage connected?)"; return; }
+      const { notes } = await r.json();
+      $("#count").textContent = notes.length + (notes.length === 1 ? " note" : " notes");
+      if (!notes.length) { const e = document.createElement("p"); e.className = "empty"; e.textContent = "the wall is empty ✦"; $("#list").append(e); return; }
+      notes.forEach(n => {
+        const el = document.createElement("article"); el.className = "note";
+        const body = document.createElement("div"); body.className = "body";
+        const p = document.createElement("p"); p.textContent = n.text;
+        const from = document.createElement("div"); from.className = "from"; from.textContent = "— " + n.name;
+        const time = document.createElement("time"); time.textContent = ago(n.at);
+        body.append(p, from, time);
+        const del = document.createElement("button"); del.type = "button"; del.className = "del"; del.textContent = "delete";
+        let armed = null;
+        del.addEventListener("click", async () => {
+          if (!del.classList.contains("sure")) {              // first tap arms, second tap deletes
+            del.classList.add("sure"); del.textContent = "tap again";
+            armed = setTimeout(() => { del.classList.remove("sure"); del.textContent = "delete"; }, 3000); return;
+          }
+          clearTimeout(armed); del.disabled = true; del.textContent = "…";
+          const r = await fetch(API + "?id=" + encodeURIComponent(n.id), { method: "DELETE", headers: { "x-admin-key": KEY } });
+          if (r.ok) { el.classList.add("gone"); setTimeout(() => { el.remove(); load(); }, 300); $("#msg").textContent = "deleted ✓"; }
+          else { const d = await r.json().catch(() => ({})); $("#msg").textContent = d.error === "not_found" ? "already deleted" : "couldn't delete (" + (d.error || r.status) + ")"; del.disabled = false; del.classList.remove("sure"); del.textContent = "delete"; if (d.error === "not_found") load(); }
+        });
+        el.append(body, del); $("#list").append(el);
+      });
+    }
+    async function unlock(key) {
+      $("#msg").textContent = "checking…";
+      const res = await check(key);
+      const reasons = { wrong_key: "wrong password", too_many_tries: "too many wrong tries — wait 15 minutes", admin_key_not_set: "set ADMIN_KEY in Vercel first (Settings → Environment Variables), then redeploy", not_configured: "storage isn't connected" };
+      if (res !== "ok") { $("#msg").textContent = reasons[res] || "couldn't check the password"; try { sessionStorage.removeItem("bdayAdminKey"); } catch (e) {} return; }
+      KEY = key; try { sessionStorage.setItem("bdayAdminKey", key); } catch (e) {}
+      document.body.classList.add("unlocked"); $("#msg").textContent = ""; load();
+    }
+    $("#lock").addEventListener("submit", e => { e.preventDefault(); const k = $("#key").value.trim(); if (k) unlock(k); });
+    $("#refresh").addEventListener("click", load);
+    $("#logout").addEventListener("click", () => { KEY = ""; try { sessionStorage.removeItem("bdayAdminKey"); } catch (e) {} document.body.classList.remove("unlocked"); $("#list").innerHTML = ""; $("#key").value = ""; });
+    if (KEY) unlock(KEY);
+  </script>
+</body>
+</html>
