@@ -720,10 +720,17 @@ function useTTS() {
   if (!tts) return;
   voiceMode = "tts"; vLabel.textContent = "read it to me"; $("#voiceBtn").dataset.cursor = "♪"; vBox.hidden = false; ScrollTrigger.refresh();
 }
+// The recording is always used when set. Phones won't load audio until a tap,
+// so nothing is preloaded here; it loads when she presses the button.
+let playAsked = false;
+function fallbackToTTS() {
+  if (voiceMode !== "file") return;
+  setPlayingUI(false); useTTS(); if (playAsked) readLetter();
+}
 if (CONFIG.voiceNote) {
-  vAudio.addEventListener("loadedmetadata", () => { voiceMode = "file"; vLabel.textContent = CONFIG.voiceLabel || "hear it from me"; vBox.hidden = false; ScrollTrigger.refresh(); }, { once: true });
-  vAudio.addEventListener("error", useTTS, { once: true });
-  vAudio.src = CONFIG.voiceNote;
+  voiceMode = "file"; vLabel.textContent = CONFIG.voiceLabel || "hear it from me"; vBox.hidden = false;
+  vAudio.preload = "none"; vAudio.src = CONFIG.voiceNote;
+  vAudio.addEventListener("error", () => { if (playAsked) fallbackToTTS(); });
 } else useTTS();
 
 function setPlayingUI(on) {
@@ -751,7 +758,13 @@ function readLetter() {
 }
 $("#voiceBtn").addEventListener("click", () => {
   initAudio();
-  if (voiceMode === "file") { vAudio.paused ? vAudio.play() : vAudio.pause(); }
+  if (voiceMode === "file") {
+    if (vAudio.paused) {
+      playAsked = true; setPlayingUI(true);              // instant feedback while it loads
+      const pr = vAudio.play();
+      if (pr && pr.catch) pr.catch(err => { if (err && err.name === "NotAllowedError") setPlayingUI(false); else fallbackToTTS(); });
+    } else vAudio.pause();
+  }
   else if (voiceMode === "tts") { reading ? stopReading() : readLetter(); }
 });
 // light up each part of the letter in time with the audio
