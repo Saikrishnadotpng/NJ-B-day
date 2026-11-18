@@ -3,7 +3,7 @@
    ═══════════════════════════════════════════════ */
 const CONFIG = {
   name: "Birthday Girl",      // her name, as you'd write it on a card
-  from: "Sunshine",           // your sign-off
+  from: "Sai",                // your sign-off
   day: "19",                  // number on the wax seals
   date: "19 · November · 2026",
   letter: [
@@ -445,10 +445,10 @@ gsap.from(".quote .eyebrow", { autoAlpha: 0, y: 20, duration: 1, scrollTrigger: 
 
 // sea: small arch → full screen (her face stays centred in the arch, then the shot opens up)
 // small zoom only (the photo is low-res), face centred by sliding, never leaving gaps in the arch
-const SEA_ZOOM = 1.08, SEA_FACE = { x: .80, y: .27 }, SEA_POS = { x: .80, y: .25 };
+const SEA_ZOOM = 1.08, SEA_FACE = { x: .73, y: .35 }, SEA_POS = { x: .78, y: .37 };
 function seaFace() {
   const img = $(".sea-frame img"), Wb = innerWidth, Hb = innerHeight;
-  const iw = img.naturalWidth || 960, ih = img.naturalHeight || 1074, k = Math.max(Wb / iw, Hb / ih);
+  const iw = img.naturalWidth || 1792, ih = img.naturalHeight || 2400, k = Math.max(Wb / iw, Hb / ih);
   const dw = iw * k, dh = ih * k, fx = (Wb - dw) * SEA_POS.x + SEA_FACE.x * dw, fy = (Hb - dh) * SEA_POS.y + SEA_FACE.y * dh;
   // the arch window at the start (matches the CSS clip-path insets)
   const insX = (small ? .14 : .32) * Wb, insY = (small ? .21 : .18) * Hb;
@@ -534,12 +534,12 @@ function blow() {
   if (cake.classList.contains("out")) return;
   initAudio();
   cake.classList.add("out"); $(".cake-section").classList.add("blown"); buzz([20, 60, 20, 60, 40]);
-  gsap.to(cakeSub, { autoAlpha: 0, duration: .3, onComplete: () => { cakeSub.textContent = "wish received — consider it on its way ✦"; gsap.to(cakeSub, { autoAlpha: 1, duration: .6 }); } });
+  gsap.to(cakeSub, { autoAlpha: 0, duration: .3, onComplete: () => { cakeSub.textContent = "now write your wish down ↓"; gsap.to(cakeSub, { autoAlpha: 1, duration: .6 }); } });
   const r = cake.getBoundingClientRect();
   burst(r.left + r.width / 2, r.top + 20, small ? 150 : 240, 1.2);
   for (let i = 0; i < (small ? 7 : 11); i++) setTimeout(() => launch(), 300 + i * 380);
   playSong();
-  setTimeout(showWishForm, 2600);
+  setTimeout(showWishForm, 2200);
   gsap.fromTo(".cake-title", { textShadow: "0 0 0px rgba(240,217,166,0)" }, { textShadow: "0 0 40px rgba(240,217,166,.6)", duration: 1.2, yoyo: true, repeat: 1 });
 }
 cake.addEventListener("click", blow);
@@ -676,9 +676,16 @@ gsap.fromTo(".scratch", { rotate: -2 }, { rotate: 1.5, ease: "none", scrollTrigg
 
 /* ═══════════════ v3 · WISH LANTERN ═══════════════ */
 function showWishForm() {
-  const f = $("#wishForm"); f.classList.add("show");
+  const f = $("#wishForm"); f.classList.add("show", "nudge");
   ScrollTrigger.refresh();
   gsap.from(f.children, { autoAlpha: 0, y: 30, stagger: .12, duration: 1.1, ease: "expo.out" });
+  // glide down so the wish box sits in the middle of the screen
+  const y = f.getBoundingClientRect().top + scrollY - innerHeight * .38;
+  setTimeout(() => scrollToY(y, 1.6), 250);
+  bell(880, actx ? actx.currentTime + .3 : 0, 1.6, .05);
+  const stop = () => f.classList.remove("nudge");
+  $("#wishInput").addEventListener("focus", stop, { once: true });
+  $("#wishInput").addEventListener("input", stop, { once: true });
 }
 $("#wishForm").addEventListener("submit", e => {
   e.preventDefault();
