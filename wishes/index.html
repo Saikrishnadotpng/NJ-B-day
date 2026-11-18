@@ -321,8 +321,8 @@
     const local = /^(localhost|127\.|192\.168\.|10\.)/.test(location.hostname) || location.protocol === "file:";
     async function tally() {
       try {
-        const r = await fetch(API, { cache: "no-store" }); if (!r.ok) return; const { notes } = await r.json();
-        $("#tally").textContent = notes.length ? `${notes.length} ${notes.length === 1 ? "note" : "notes"} on her wall so far` : "be the first note on her wall";
+        const r = await fetch(API + "?count=1", { cache: "no-store" }); if (!r.ok) return; const { count } = await r.json();   // just the number, not other people's notes
+        $("#tally").textContent = count ? `${count} ${count === 1 ? "note" : "notes"} on her wall so far` : "be the first note on her wall";
       } catch (e) { }
     }
     tally();

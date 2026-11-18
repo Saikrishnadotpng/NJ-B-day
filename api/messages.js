@@ -9,7 +9,7 @@ const crypto = require("crypto");
 
 const LIST = "bday:notes";
 const MAX_KEEP = 300;       // notes kept
-const MAX_SHOW = 150;       // notes returned
+const MAX_SHOW = 300;       // notes returned (all of them)
 const LIMIT = 12;           // notes per internet address (friends on the same Wi-Fi share one)…
 const WINDOW = 600;         // …per 10 minutes
 
@@ -30,10 +30,15 @@ async function pipeline(env, commands) {
   return out.map(x => { if (x.error) throw new Error(x.error); return x.result; });
 }
 
-const clean = (v, max) => String(v == null ? "" : v)
-  .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "")
-  .replace(/\s+\n/g, "\n").replace(/\n{3,}/g, "\n\n")
+// only real strings; cut length FIRST so huge inputs can't slow the regexes down
+const clean = (v, max) => (typeof v === "string" ? v : typeof v === "number" ? String(v) : "")
+  .slice(0, max * 2)
+  .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "")          // control characters
+  .replace(/[\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g, "")          // invisible / direction-flipping characters
+  .replace(/[ \t\r]+\n/g, "\n").replace(/\n{3,}/g, "\n\n")
   .trim().slice(0, max);
+// a counter whose window starts at the first hit and is NOT extended by later hits
+const countHit = (env, key, seconds) => pipeline(env, [["SET", key, "0", "EX", String(seconds), "NX"], ["INCR", key]]).then(r => r[1]);
 
 function sameSecret(a, b) {
   const x = crypto.createHash("sha256").update(String(a)).digest();
@@ -49,6 +54,8 @@ module.exports = async function handler(req, res) {
 
   try {
     if (req.method === "GET") {
+      const wantCount = (req.query && req.query.count) || new URL(req.url || "/", "http://x").searchParams.get("count");
+      if (wantCount) { const [count] = await pipeline(env, [["LLEN", LIST]]); return res.status(200).json({ count }); }
       const [items] = await pipeline(env, [["LRANGE", LIST, "0", String(MAX_SHOW - 1)]]);
       const notes = (items || []).map(s => { try { return JSON.parse(s); } catch { return null; } }).filter(Boolean);
       return res.status(200).json({ notes });
@@ -65,7 +72,7 @@ module.exports = async function handler(req, res) {
 
       const ip = clientIp(req);
       const rlKey = "bday:rl:" + ip;
-      const [count] = await pipeline(env, [["INCR", rlKey], ["EXPIRE", rlKey, String(WINDOW)]]);
+      const count = await countHit(env, rlKey, WINDOW);
       if (count > LIMIT) return res.status(429).json({ error: "slow_down" });
 
       const note = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7), name, text, at: Date.now() };
@@ -77,11 +84,14 @@ module.exports = async function handler(req, res) {
       const admin = process.env.ADMIN_KEY || "";
       if (admin.length < 6) return res.status(403).json({ error: "admin_key_not_set" });
       const failKey = "bday:af:" + clientIp(req);
-      const given = req.headers["x-admin-key"] || "";
+      const [prior] = await pipeline(env, [["GET", failKey]]);
+      if (Number(prior) >= 10) return res.status(429).json({ error: "too_many_tries" });   // locked out: don't even check
+      const given = String(req.headers["x-admin-key"] || "");
       if (!sameSecret(given, admin)) {
-        const [fails] = await pipeline(env, [["INCR", failKey], ["EXPIRE", failKey, "900"]]);
-        return res.status(fails > 10 ? 429 : 401).json({ error: fails > 10 ? "too_many_tries" : "wrong_key" });
+        const fails = await countHit(env, failKey, 900);
+        return res.status(fails >= 10 ? 429 : 401).json({ error: fails >= 10 ? "too_many_tries" : "wrong_key" });
       }
+      await pipeline(env, [["DEL", failKey]]);
       const id = String((req.query && req.query.id) || new URL(req.url, "http://x").searchParams.get("id") || "");
       if (!id) return res.status(200).json({ ok: true });                     // password check only
       const [items] = await pipeline(env, [["LRANGE", LIST, "0", "-1"]]);

@@ -138,7 +138,7 @@ function playSong() {
   const beat = .42; let t = actx.currentTime + .15;
   SONG.forEach(([n, d]) => { bell(N[n], t, Math.max(1.2, d * beat * 2.3)); bell(N[n] / 2, t, Math.max(1, d * beat * 2), .05); t += d * beat; });
   songUntil = t;
-  duckAmbient(.18); clearTimeout(playSong.t); playSong.t = setTimeout(() => duckAmbient(1), (t - actx.currentTime) * 1000);
+  duckAmbient(.18); clearTimeout(playSong.t); playSong.t = setTimeout(() => duckAmbient((typeof vAudio !== "undefined" && !vAudio.paused) || (typeof reading !== "undefined" && reading) ? .2 : 1), (t - actx.currentTime) * 1000);
 }
 /* ───────── soothing ambient bed: warm pad + soft chimes + distant waves ───────── */
 let amb = null, ambTimer = null, ambChord = 0;
@@ -162,7 +162,9 @@ function startAmbient() {
   const lfo = actx.createOscillator(), lfoG = actx.createGain(); lfo.frequency.value = .085; lfoG.gain.value = .045;
   lfo.connect(lfoG); lfoG.connect(ng.gain);
   noise.connect(nf); nf.connect(ng); ng.connect(amb); noise.start(); lfo.start();
+  const quiet = () => document.hidden || muted || actx.state !== "running";
   const playChord = () => {
+    if (quiet()) return;
     const t = actx.currentTime + .05, dur = 9;
     CHORDS[ambChord++ % CHORDS.length].forEach((f, i) => {
       [0, 1].forEach(k => {
@@ -177,6 +179,7 @@ function startAmbient() {
   };
   const sprinkle = () => {
     if (!amb) return;
+    if (quiet()) { ambTimer = setTimeout(sprinkle, 2000); return; }
     const f = PENTA[(Math.random() * PENTA.length) | 0], t = actx.currentTime + .05;
     const o = actx.createOscillator(), g = actx.createGain(); o.type = "sine"; o.frequency.value = f;
     g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.022, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + 3.5);
@@ -186,6 +189,11 @@ function startAmbient() {
   playChord(); setInterval(playChord, 8000);
   setTimeout(sprinkle, 2500);
 }
+// pause all sound while the tab is in the background, resume when she comes back
+document.addEventListener("visibilitychange", () => {
+  if (!actx || !opened) return;
+  if (document.hidden) actx.suspend().catch(() => {}); else actx.resume().catch(() => {});
+});
 function duckAmbient(level) { if (amb && actx) amb.gain.setTargetAtTime(level, actx.currentTime, .6); }
 
 const soundBtn = $("#soundBtn");
@@ -354,7 +362,7 @@ gsap.set(".arch-img img", { scale: 1.45 });
 gsap.set(".arch-frame", { autoAlpha: 0, x: 18, y: -18 });
 gsap.set(".arch figcaption", { autoAlpha: 0, scale: .6, rotate: -20 });
 
-const assets = $$("img").map(img => img.complete ? Promise.resolve() : new Promise(r => { img.onload = img.onerror = r; }));
+const assets = $$(".hero img").map(img => img.complete ? Promise.resolve() : new Promise(r => { img.onload = img.onerror = r; }));
 const ready = Promise.all([...assets, document.fonts ? document.fonts.ready : Promise.resolve()]);
 const counter = { v: 0 };
 const countTween = gsap.to(counter, {
@@ -657,7 +665,7 @@ addEventListener("resize", () => { clearTimeout(fitSecret.t); fitSecret.t = setT
 const sc = $("#scratchCanvas"), sctx = sc.getContext("2d", { willReadFrequently: true });
 let scW = 0, scH = 0, scDone = false, scMoves = 0, scLast = null;
 function paintFoil() {
-  const r = sc.getBoundingClientRect(); scW = r.width; scH = r.height;
+  scW = sc.clientWidth; scH = sc.clientHeight;
   sc.width = scW * DPR; sc.height = scH * DPR; sctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   const g = sctx.createLinearGradient(0, 0, scW, scH);
   g.addColorStop(0, "#9c7436"); g.addColorStop(.3, "#e6c88a"); g.addColorStop(.5, "#fff0c8"); g.addColorStop(.7, "#d2ad68"); g.addColorStop(1, "#8a6229");
@@ -699,7 +707,7 @@ sc.addEventListener("pointerdown", e => { if (scDone) return; initAudio(); sc.se
 sc.addEventListener("pointermove", e => { if (scDone || !sc.dataset.down) return; const r = sc.getBoundingClientRect(); scratchAt(e.clientX - r.left, e.clientY - r.top); });
 ["pointerup", "pointercancel", "pointerleave"].forEach(ev => sc.addEventListener(ev, () => { delete sc.dataset.down; scLast = null; }));
 paintFoil();
-addEventListener("resize", () => { if (!scDone) paintFoil(); });
+addEventListener("resize", () => { if (!scDone && Math.abs(sc.clientWidth - scW) > 2) paintFoil(); });   // phones fire resize when the address bar moves
 gsap.from(".secret .eyebrow, .secret h2, .scratch, .scratch-hint", { autoAlpha: 0, y: 50, stagger: .14, duration: 1.3, ease: "expo.out", scrollTrigger: { trigger: ".secret", start: "top 70%" } });
 gsap.fromTo(".scratch", { rotate: -2 }, { rotate: 1.5, ease: "none", scrollTrigger: { trigger: ".secret", start: "top bottom", end: "bottom top", scrub: true } });
 
@@ -719,6 +727,7 @@ function showWishForm() {
 $("#wishForm").addEventListener("submit", e => {
   e.preventDefault();
   const input = $("#wishInput"); input.blur();
+  const cur = $(".cursor"); if (cur) cur.classList.remove("hover");
   const text = input.value.trim() || "a secret wish";
   $("#lanternText").textContent = text;
   const f = $("#wishForm"), r = f.getBoundingClientRect();
@@ -792,13 +801,19 @@ function readLetter() {
     tts.speak(u);
   });
 }
+function unmuteForVoice() {
+  if (!muted) return;
+  muted = false; soundBtn.classList.remove("muted");
+  if (master && actx) master.gain.setTargetAtTime(1, actx.currentTime, .05);
+}
 $("#voiceBtn").addEventListener("click", () => {
-  initAudio();
+  initAudio(); unmuteForVoice();
   if (voiceMode === "file") {
     if (vAudio.paused) {
       playAsked = true; setPlayingUI(true);              // instant feedback while it loads
       const pr = vAudio.play();
-      if (pr && pr.catch) pr.catch(err => { if (err && err.name === "NotAllowedError") setPlayingUI(false); else fallbackToTTS(); });
+      // a quick second tap pauses while it's still loading (AbortError) — that's fine, keep the recording
+      if (pr && pr.catch) pr.catch(() => { if (vAudio.error) fallbackToTTS(); else if (vAudio.paused) setPlayingUI(false); });
     } else vAudio.pause();
   }
   else if (voiceMode === "tts") { reading ? stopReading() : readLetter(); }
@@ -819,7 +834,8 @@ function syncLoop() {
   syncRaf = requestAnimationFrame(syncLoop);
 }
 function clearSync() { cancelAnimationFrame(syncRaf); lastIdx = -1; letterParts().forEach(p => p.classList.remove("reading")); }
-vAudio.addEventListener("play", () => { setPlayingUI(true); duckAmbient(.2); syncLoop(); });
+vAudio.addEventListener("play", () => { setPlayingUI(true); duckAmbient(.2); });
+vAudio.addEventListener("playing", () => { cancelAnimationFrame(syncRaf); syncLoop(); });
 vAudio.addEventListener("pause", () => { setPlayingUI(false); duckAmbient(1); clearSync(); });
 vAudio.addEventListener("ended", () => { setPlayingUI(false); duckAmbient(1); clearSync(); vAudio.currentTime = 0; });
 addEventListener("pagehide", () => tts && tts.cancel());
@@ -877,7 +893,7 @@ function agoText(t) {
   const d = new Date(t); return d.toLocaleDateString(undefined, { day: "numeric", month: "short" });
 }
 function makeNote(n) {
-  const el = document.createElement("article"); el.className = "note";
+  const el = document.createElement("article"); el.className = "note"; el.dataset.id = n.id;
   el.style.setProperty("--r", ((hashNum(n.id) % 9) - 4) * .55 + "deg");
   el.style.setProperty("--t", ((hashNum(n.id + "t") % 7) - 3) + "deg");
   const p = document.createElement("p"); p.textContent = n.text;                 // always text, never HTML
@@ -892,8 +908,12 @@ function makeNote(n) {
   }
   return el;
 }
-function renderNotes(list, animate = true) {
+function renderNotes(list, animate = true, full = false) {
   wallReady = true; const fresh = [];
+  if (full) {                                            // remove notes that were deleted
+    const keep = new Set(list.map(n => n && n.id));
+    $$(".note", notesBox).forEach(el => { if (!keep.has(el.dataset.id)) { seenNotes.delete(el.dataset.id); el.remove(); } });
+  }
   list.slice().reverse().forEach(n => {
     if (!n || !n.id || seenNotes.has(n.id)) return;
     seenNotes.add(n.id); const el = makeNote(n); notesBox.prepend(el); fresh.push(el);
@@ -915,7 +935,8 @@ async function loadNotes() {
   try {
     const r = await fetch(NOTES_API, { cache: "no-store" });
     if (!r.ok) throw new Error(r.status);
-    const data = await r.json(); wallFails = 0; renderNotes(data.notes || [], wallReady);
+    const data = await r.json(); wallFails = 0; const before = seenNotes.size; renderNotes(data.notes || [], wallReady, true);
+    if (seenNotes.size < before) ScrollTrigger.refresh();
   } catch (e) {
     if (!wallReady && ++wallFails >= 3) wallUnavailable();
     else if (!wallReady) setTimeout(loadNotes, 3000);
