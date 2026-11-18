@@ -840,3 +840,83 @@ if ("IntersectionObserver" in window) {
   const offIO = new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle("is-offscreen", !e.isIntersecting)), { rootMargin: "120px 0px" });
   $$(".hero, .wishes, .cake-section, .finale, .secret").forEach(el => offIO.observe(el));
 }
+
+/* ═══════════════ v8 · NOTES WALL (friends' birthday notes, live) ═══════════════ */
+const NOTES_API = "/api/messages";
+const wallEl = $("#wall"), notesBox = $("#notes"), wallEmpty = $("#wallEmpty"), wallSub = $("#wallSub");
+const isLocalHost = /^(localhost|127\.|192\.168\.|10\.|\[::1\])/.test(location.hostname) || location.protocol === "file:";
+const seenNotes = new Set();
+let wallReady = false, wallFails = 0, wallPoll = null;
+const hashNum = str => { let h = 0; for (const c of String(str)) h = (h * 31 + c.charCodeAt(0)) | 0; return Math.abs(h); };
+function agoText(t) {
+  const m = Math.round((Date.now() - t) / 60000);
+  if (m < 1) return "just now"; if (m < 60) return m + " min ago";
+  const h = Math.round(m / 60); if (h < 24) return h + (h === 1 ? " hour ago" : " hours ago");
+  const d = new Date(t); return d.toLocaleDateString(undefined, { day: "numeric", month: "short" });
+}
+function makeNote(n) {
+  const el = document.createElement("article"); el.className = "note";
+  el.style.setProperty("--r", ((hashNum(n.id) % 9) - 4) * .55 + "deg");
+  el.style.setProperty("--t", ((hashNum(n.id + "t") % 7) - 3) + "deg");
+  const p = document.createElement("p"); p.textContent = n.text;                 // always text, never HTML
+  const from = document.createElement("span"); from.className = "note-from"; from.textContent = "— " + n.name;
+  const time = document.createElement("time"); time.dataset.at = n.at; time.textContent = agoText(n.at);
+  el.append(p, from, time); return el;
+}
+function renderNotes(list, animate = true) {
+  wallReady = true; const fresh = [];
+  list.slice().reverse().forEach(n => {
+    if (!n || !n.id || seenNotes.has(n.id)) return;
+    seenNotes.add(n.id); const el = makeNote(n); notesBox.prepend(el); fresh.push(el);
+  });
+  wallEmpty.hidden = seenNotes.size > 0;
+  if (seenNotes.size) wallSub.textContent = seenNotes.size === 1 ? "someone wanted to say something today" : `${seenNotes.size} people wanted to say something today`;
+  $$("time[data-at]", notesBox).forEach(t => (t.textContent = agoText(+t.dataset.at)));
+  if (fresh.length && animate) gsap.from(fresh.reverse(), { autoAlpha: 0, y: 40, scale: .92, stagger: .07, duration: 1, ease: "back.out(1.5)" });
+  if (fresh.length) ScrollTrigger.refresh();
+}
+function wallUnavailable() {
+  if (isLocalHost) {                                   // preview on your laptop: explain instead of hiding
+    wallSub.textContent = "notes appear here on the live site (they need the Vercel storage)";
+    wallEmpty.hidden = false; return;
+  }
+  wallEl.style.display = "none"; ScrollTrigger.refresh();   // never show her a broken section
+}
+async function loadNotes() {
+  try {
+    const r = await fetch(NOTES_API, { cache: "no-store" });
+    if (!r.ok) throw new Error(r.status);
+    const data = await r.json(); wallFails = 0; renderNotes(data.notes || [], wallReady);
+  } catch (e) {
+    if (!wallReady && ++wallFails >= 3) wallUnavailable();
+    else if (!wallReady) setTimeout(loadNotes, 3000);
+  }
+}
+loadNotes();
+ScrollTrigger.create({                                 // refresh every 15s while she's looking at the wall
+  trigger: "#wall", start: "top bottom", end: "bottom top",
+  onToggle: st => { clearInterval(wallPoll); if (st.isActive) { loadNotes(); wallPoll = setInterval(loadNotes, 15000); } }
+});
+gsap.from(".wall .eyebrow, .wall-title, .wall-sub", { autoAlpha: 0, y: 40, stagger: .12, duration: 1.2, ease: "expo.out", scrollTrigger: { trigger: "#wall", start: "top 70%" } });
+
+const noteText = $("#noteText"), noteBtn = $("#noteBtn"), noteStatus = $("#noteStatus");
+noteText.addEventListener("input", () => ($("#noteCount").textContent = `${noteText.value.length} / 280`));
+$("#noteForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const text = noteText.value.trim();
+  if (text.length < 2) { noteStatus.textContent = "write a little something first ✦"; return; }
+  noteBtn.disabled = true; noteStatus.textContent = "pinning…";
+  try {
+    const r = await fetch(NOTES_API, { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: $("#noteName").value, text, website: $("#noteHp").value }) });
+    if (r.status === 429) { noteStatus.textContent = "that's a lot of love — try again in a few minutes ♥"; return; }
+    if (!r.ok) throw new Error(r.status);
+    const data = await r.json();
+    if (data.note) renderNotes([data.note]);
+    noteText.value = ""; $("#noteCount").textContent = "0 / 280";
+    noteStatus.textContent = "it's on the wall ✦";
+    const b = noteBtn.getBoundingClientRect(); burst(b.left + b.width / 2, b.top, small ? 70 : 110, .7); chime(); buzz(20);
+  } catch (err) {
+    noteStatus.textContent = isLocalHost ? "notes only work on the live site" : "couldn't pin it — check your connection and try again";
+  } finally { noteBtn.disabled = false; }
+});

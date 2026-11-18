@@ -194,6 +194,23 @@
     </section>
     <div class="lantern" id="lantern" aria-hidden="true"><div class="lantern-body"><span id="lanternText"></span></div><div class="lantern-glow"></div></div>
 
+    <!-- ═════════ 7b · NOTES WALL ═════════ -->
+    <section class="wall" id="wall">
+      <p class="eyebrow center light">from your people</p>
+      <h2 class="center wall-title">Notes for <em data-name>Birthday Girl</em></h2>
+      <p class="center wall-sub" id="wallSub">everyone who wanted to say something today</p>
+      <div class="notes" id="notes" aria-live="polite"></div>
+      <p class="center wall-empty" id="wallEmpty" hidden>the wall is waiting for its first note ✦</p>
+      <form class="note-form" id="noteForm" autocomplete="off">
+        <p class="nf-title">Add a note to the wall</p>
+        <input id="noteName" maxlength="40" placeholder="your name" aria-label="Your name" />
+        <textarea id="noteText" maxlength="280" rows="3" placeholder="write something…" aria-label="Your note"></textarea>
+        <input class="hp" id="noteHp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+        <div class="nf-row"><span class="nf-count" id="noteCount">0 / 280</span><button type="submit" id="noteBtn" data-cursor="✦">pin it ✦</button></div>
+        <p class="nf-status" id="noteStatus" role="status"></p>
+      </form>
+    </section>
+
     <!-- ═════════ 8 · FINALE ═════════ -->
     <section class="finale" id="finale">
       <div class="stars" aria-hidden="true"></div>
