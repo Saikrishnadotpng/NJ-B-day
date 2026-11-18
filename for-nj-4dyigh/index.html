@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Happy Birthday ✦</title>
+  <meta name="theme-color" content="#3d0a0f" />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2246%22 fill=%22%23c29a5b%22/%3E%3Ctext x=%2250%22 y=%2266%22 font-size=%2244%22 text-anchor=%22middle%22 font-family=%22Georgia%22 fill=%22%235e0f16%22%3E19%3C/text%3E%3C/svg%3E" />
+  <script>if ("scrollRestoration" in history) history.scrollRestoration = "manual"; window.scrollTo(0, 0);</script>
+  <link rel="stylesheet" href="/for-nj-4dyigh/style.css" />
+</head>
+<body class="is-loading">
+
+  <!-- ═════════ LOADER ═════════ -->
+  <div id="loader">
+    <div class="loader-inner">
+      <span class="loader-count"><span id="loadNum">0</span><sup>%</sup></span>
+      <span class="loader-line"><i id="loadBar"></i></span>
+      <span class="loader-label">preparing something</span>
+    </div>
+  </div>
+
+  <!-- ═════════ GATE ═════════ -->
+  <div id="gate">
+    <div class="gate-half gate-top"></div>
+    <div class="gate-half gate-bottom"></div>
+    <div class="gate-flash"></div>
+    <div class="gate-lines" id="gateLines" aria-live="polite"></div>
+    <p class="gate-skip" id="gateSkip">tap to skip</p>
+    <div class="gate-inner">
+      <p class="gate-kicker"><span>a little something,</span> <span>just for you</span></p>
+      <button id="seal" class="magnetic" aria-label="Open your surprise">
+        <span class="seal-ring"></span><span class="seal-ring r2"></span>
+        <span class="seal-core"><span class="seal-num" data-day>19</span></span>
+      </button>
+      <p class="gate-hint">tap the seal <span class="hint-sound">· sound on ♪</span></p>
+    </div>
+  </div>
+
+  <!-- ═════════ OVERLAYS ═════════ -->
+  <canvas id="dust" aria-hidden="true"></canvas>
+  <canvas id="fx" aria-hidden="true"></canvas>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="progress" aria-hidden="true"><i id="progressBar"></i></div>
+  <div class="cursor" aria-hidden="true"><div class="cursor-ring"><span class="cursor-label"></span></div><div class="cursor-dot"></div></div>
+  <button id="soundBtn" class="sound-btn" aria-label="Toggle sound" hidden><span></span><span></span><span></span><span></span></button>
+
+  <main id="main">
+
+    <!-- ═════════ 1 · HERO ═════════ -->
+    <section class="hero" id="top">
+      <div class="petals" aria-hidden="true"></div>
+      <div class="hero-text">
+        <p class="eyebrow hero-eyebrow"><span class="line-mask"><span data-date>19 · November · 2026</span></span></p>
+        <h1>
+          <span class="h1-small"><span class="line-mask"><span>Happy Birthday,</span></span></span>
+          <span class="h1-name split-chars" data-name>NJ</span>
+        </h1>
+        <p class="lede"><span class="line-mask"><span>Here's to another year of you being</span></span> <span class="line-mask"><span>exactly, wonderfully you.</span></span></p>
+        <a href="#quote" class="scroll-cue" data-cursor="scroll"><span>scroll slowly</span><i></i></a>
+      </div>
+      <figure class="arch" data-cursor="✦">
+        <div class="arch-frame"></div>
+        <div class="arch-tilt">
+          <div class="arch-img"><img src="/for-nj-4dyigh/media/photo-1.jpg" fetchpriority="high" decoding="async" alt="NJ smiling in a sunlit palace courtyard" /></div>
+          <div class="arch-shine"></div>
+        </div>
+        <figcaption>the main character</figcaption>
+      </figure>
+      <div class="hero-orb" aria-hidden="true"></div>
+    </section>
+
+    <!-- ═════════ 2 · MARQUEE ═════════ -->
+    <div class="marquee-wrap" aria-hidden="true">
+      <div class="marquee m1"><div class="marquee-track">
+        <span>happy birthday</span><b>✦</b><span>make a wish</span><b>✦</b><span>today is yours</span><b>✦</b><span>happy birthday</span><b>✦</b><span>make a wish</span><b>✦</b><span>today is yours</span><b>✦</b>
+      </div></div>
+      <div class="marquee m2"><div class="marquee-track">
+        <span>19 · 11</span><b>❋</b><span>celebrate</span><b>❋</b><span>19 · 11</span><b>❋</b><span>celebrate</span><b>❋</b><span>19 · 11</span><b>❋</b><span>celebrate</span><b>❋</b><span>19 · 11</span><b>❋</b><span>celebrate</span><b>❋</b>
+      </div></div>
+    </div>
+
+    <!-- ═════════ 3 · QUOTE (scroll-lit words) ═════════ -->
+    <section class="quote" id="quote">
+      <p class="eyebrow center">a small observation</p>
+      <p class="quote-text split-words">Some people are loud like a party. <em>You're more like the sea at evening</em> — calm, a little wild, and somehow the thing everyone ends up looking at.</p>
+    </section>
+
+    <!-- ═════════ 4 · SEA (pinned expand) ═════════ -->
+    <section class="sea" id="sea">
+      <div class="sea-stage">
+        <div class="sea-frame">
+          <img src="/for-nj-4dyigh/media/photo-2.jpg" decoding="async" alt="NJ sitting on the rocks by the sea" />
+          <div class="sea-shade"></div>
+        </div>
+        <div class="sea-caption">
+          <p class="eyebrow light">somewhere by the sea</p>
+          <h2>I just thought someone<br /><em>should tell you that today.</em></h2>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════ 5 · WISHES (horizontal) ═════════ -->
+    <section class="wishes" id="wishes">
+      <div class="wishes-pin">
+        <div class="wishes-track">
+          <div class="wish-intro">
+            <p class="eyebrow">for the year ahead</p>
+            <h2>Things I<br /><em>wish for you</em></h2>
+            <p class="wish-hint">keep scrolling <i>→</i></p>
+          </div>
+          <article class="wish" data-cursor="✦"><span class="wish-no">01</span><span class="wish-icon">☀</span><h3>More sunsets than deadlines</h3><p>And someone to send the photos to.</p></article>
+          <article class="wish" data-cursor="✦"><span class="wish-no">02</span><span class="wish-icon">✿</span><h3>Laughs that hurt your stomach</h3><p>The kind you can't explain later.</p></article>
+          <article class="wish" data-cursor="✦"><span class="wish-no">03</span><span class="wish-icon">☾</span><h3>Every plan going your way</h3><p>Or better: going somewhere better.</p></article>
+          <article class="wish" data-cursor="✦"><span class="wish-no">04</span><span class="wish-icon">✦</span><h3>A year that feels like you</h3><p>Bright, kind, and a little unstoppable.</p></article>
+        </div>
+        <div class="wishes-bar"><i></i></div>
+      </div>
+    </section>
+
+    <!-- ═════════ 6 · LETTER (envelope opens on scroll) ═════════ -->
+    <section class="envelope-section" id="letter">
+      <div class="env-stage">
+        <p class="eyebrow center env-eyebrow">you've got mail</p>
+        <div class="envelope">
+          <div class="env-back"></div>
+          <div class="env-card">
+            <p class="env-card-to">Dear</p>
+            <p class="env-card-name" data-name>NJ</p>
+            <span class="env-card-line"></span>
+            <p class="env-card-small">read on ↓</p>
+          </div>
+          <div class="env-front"></div>
+          <div class="env-flap"><div class="env-seal" data-day>19</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="letter-section">
+      <div class="letter">
+        <p class="letter-to">Dear <span data-name>NJ</span>,</p>
+        <div class="letter-body" id="letterBody"></div>
+        <p class="letter-sign">— <span data-from>Sai</span></p>
+        <div class="voice" id="voice" hidden>
+          <button class="voice-btn" id="voiceBtn" data-cursor="▶" aria-label="Play voice message">
+            <span class="voice-icon" id="voiceIcon">▶</span>
+            <span class="voice-wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="voice-label">hear it from me</span>
+          </button>
+          <audio id="voiceAudio" preload="none" playsinline></audio>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════ 6b · SCRATCH CARD ═════════ -->
+    <section class="secret" id="secret">
+      <p class="eyebrow center">one more thing</p>
+      <h2 class="center">There's something<br /><em>hidden here.</em></h2>
+      <div class="scratch" data-cursor="scratch">
+        <div class="scratch-msg"><span class="scratch-chapter" id="secretChapter"></span><p id="secretText"></p><span class="scratch-source" id="secretSource"></span><span class="scratch-sign" data-from>Sai</span></div>
+        <canvas id="scratchCanvas" aria-label="Gold foil, scratch to reveal"></canvas>
+      </div>
+      <p class="scratch-hint" id="scratchHint">scratch the gold with your finger ✦</p>
+    </section>
+
+    <!-- ═════════ 7 · LIGHTS OFF → CAKE ═════════ -->
+    <section class="dusk" aria-hidden="true">
+      <p class="dusk-text">lights off.</p>
+    </section>
+
+    <section class="cake-section" id="cake-section">
+      <div class="cake-glow" id="cakeGlow"></div>
+      <p class="eyebrow center light">one last thing</p>
+      <h2 class="center cake-title">Close your eyes.<br /><em>Make a wish.</em></h2>
+      <p class="center cake-sub" id="cakeSub">then tap the flame to blow it out</p>
+      <div class="cake" id="cake" role="button" tabindex="0" aria-label="Blow out the candle" data-cursor="blow">
+        <div class="candle">
+          <div class="flame" id="flame"><div class="flame-inner"></div></div>
+          <div class="smoke"><i></i><i></i><i></i></div>
+          <div class="wick"></div>
+        </div>
+        <div class="tier tier-top"><span class="drip"></span></div>
+        <div class="tier tier-bottom"><span class="dots"></span></div>
+        <div class="plate"></div>
+      </div>
+      <form class="wish-form" id="wishForm" autocomplete="off">
+        <p class="wf-title">Now, write your wish down.</p>
+        <p class="wf-note">it never leaves your screen — nobody will ever see it, not even me</p>
+        <div class="wf-row">
+          <input id="wishInput" maxlength="70" placeholder="I wish…" aria-label="Your wish" />
+          <button type="submit" data-cursor="✦">release ✦</button>
+        </div>
+      </form>
+    </section>
+    <div class="lantern" id="lantern" aria-hidden="true"><div class="lantern-body"><span id="lanternText"></span></div><div class="lantern-glow"></div></div>
+
+    <!-- ═════════ 7b · NOTES WALL ═════════ -->
+    <section class="wall" id="wall">
+      <p class="eyebrow center light">from your people</p>
+      <h2 class="center wall-title">Notes for <em data-name>NJ</em></h2>
+      <p class="center wall-sub" id="wallSub">everyone who wanted to say something today</p>
+      <div class="notes" id="notes" aria-live="polite"></div>
+      <p class="center wall-empty" id="wallEmpty" hidden>the wall is waiting for its first note ✦</p>
+      <form class="note-form" id="noteForm" autocomplete="off">
+        <p class="nf-title">Add a note to the wall</p>
+        <input id="noteName" maxlength="40" placeholder="your name" aria-label="Your name" />
+        <textarea id="noteText" maxlength="2000" rows="3" placeholder="write something…" aria-label="Your note"></textarea>
+        <input class="hp" id="noteHp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+        <div class="nf-row"><span class="nf-count" id="noteCount"></span><button type="submit" id="noteBtn" data-cursor="✦">pin it ✦</button></div>
+        <p class="nf-status" id="noteStatus" role="status"></p>
+      </form>
+    </section>
+
+    <!-- ═════════ 8 · FINALE ═════════ -->
+    <section class="finale" id="finale">
+      <div class="stars" aria-hidden="true"></div>
+      <p class="eyebrow center light">19 · 11</p>
+      <h2 class="finale-title"><span class="ft-1">Happy</span><span class="ft-2">Birthday,</span><span class="ft-name-wrap" data-cursor="touch"><canvas id="nameCanvas"></canvas><span class="ft-name" data-name>NJ</span></span></h2>
+      <p class="finale-sub">may this year be as beautiful as you make everything around you.</p>
+      <p class="bday-clock" id="bdayClock"></p>
+      <div class="finale-actions">
+        <button class="pill magnetic" id="songBtn" data-cursor="♪">♪ play the song</button>
+        <button class="pill ghost magnetic" id="againBtn" data-cursor="↺">watch it again</button>
+      </div>
+      <footer>made with far too much care, for one person — <span data-from>Sai</span></footer>
+    </section>
+
+  </main>
+
+  <script src="/assets/vendor/gsap.min.js"></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="/assets/vendor/lenis.min.js"></script>
+  <script src="/for-nj-4dyigh/script.js"></script>
+</body>
+</html>

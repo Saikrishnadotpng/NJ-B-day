@@ -2,25 +2,26 @@ BIRTHDAY WEBSITE
 ================
 
 Folder
-  index.html      the page
-  style.css       all the design
-  script.js       animations, particles, fireworks, music
+  index.html      sends visitors to the friends' page
+  <private folder>/  HER page: index.html, script.js, style.css, media/ (photos + voice)
+  wishes/         friends' note page (+ wishes/admin to delete notes)
+  api/            notes storage function
   assets/         photos, bundled fonts, and the animation libraries
                   (GSAP + Lenis), so it works fully offline
 
 1. PERSONALISE (2 minutes)
-   Open script.js. At the very top is CONFIG:
+   Open script.js in her private folder. At the very top is CONFIG:
      name    -> her name (hero, envelope, letter, finale, tab title)
      from    -> your sign-off
      letter  -> the paragraphs of the letter
      intro   -> the dark opening lines shown one by one before the seal
      secret  -> the message hidden under the gold scratch card
    Other copy (the quote, the sea line, the 4 wishes, the finale line)
-   is plain text in index.html.
+   is plain text in her folder's index.html.
 
    VOICE NOTE (the strongest thing you can add):
    Record yourself on your phone, convert/save it as an .mp3, name it
-   voice-note.mp3 and drop it into the assets folder. A "hear it from me"
+   voice-note.mp3 and drop it into her folder's media folder. A "hear it from me"
    button appears under the letter automatically. No file = no button.
 
 2. PREVIEW (use a local server)

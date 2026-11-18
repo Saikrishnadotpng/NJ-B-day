@@ -2,7 +2,7 @@
    EDIT THESE — everything personal lives here
    ═══════════════════════════════════════════════ */
 const CONFIG = {
-  name: "Birthday Girl",      // her name, as you'd write it on a card
+  name: "NJ",                 // her name, as you'd write it on a card
   from: "Sai",                // your sign-off
   day: "19",                  // number on the wax seals
   date: "19 · November · 2026",
@@ -19,8 +19,8 @@ const CONFIG = {
   secretChapter: "Chapter Nineteen",
   secret: "He had been standing at the edge of too many questions for too long, waiting for one of them to answer back. Then she walked in — laughing at something he couldn't hear — and for the first time in months, the noise in his head went quiet.",
   secretSource: "— from a story I'm still writing",
-  // record a voice message, save it as assets/voice-note.mp3 — the button appears automatically
-  voiceNote: "assets/voice-note.mp3",
+  // record a voice message, save it as for-nj-4dyigh/media/voice-note.mp3 — the button appears automatically
+  voiceNote: "/for-nj-4dyigh/media/voice-note.mp3",
   voiceLabel: "read it to me",   // use "hear it from me" only if it's your real voice
   // second each part starts in the audio: Dear…, paragraph 1–4, signature
   voiceCues: [0, 1.35, 7.4, 17.48, 27.38, 28.9],
@@ -747,7 +747,7 @@ $("#wishForm").addEventListener("submit", e => {
 });
 
 /* ═══════════════ v4 · LETTER VOICE ═══════════════
-   If assets/voice-note.mp3 exists → plays YOUR recording ("hear it from me").
+   If the voice note file exists → plays YOUR recording ("hear it from me").
    Otherwise → the device reads the letter aloud ("read it to me"),
    highlighting each paragraph as it goes. */
 const vAudio = $("#voiceAudio"), vBox = $("#voice"), vLabel = $(".voice-label"), vIcon = $("#voiceIcon");
